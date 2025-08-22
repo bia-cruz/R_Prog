@@ -1,2 +1,2 @@
 # R_Prog
-repositório para as aulas de programação
+repositório para as aulas de programação.
