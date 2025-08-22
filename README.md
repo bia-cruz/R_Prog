@@ -1,2 +1,7 @@
 # R_Prog
-repositório para as aulas de programação.
+
+
+meu primeiro README.
+
+nesse documento vamos incluir os fundamentos da disciplina
+CE302. 
