@@ -1,3 +1,5 @@
+
+
 install.packages("httr")
 require("httr")
 # get serve para fazer requisição
@@ -6,6 +8,7 @@ require("httr")
 # delete serve para remover recursos
 # add_headers serve para adicionar cabeçalhos, como tokens
 # content serve para extrair e interpretar conteúdo da resposta
+
 
 
 install.packages("jsonlite")
@@ -197,6 +200,42 @@ group_storms <- storms %>%
 glimpse(group_storms)
 View(group_storms)
 
+# simulação de utilização de lubridate
+banco_de_dados %>%
+  mutate(data = dmy(data)) %>%
+  select(data) 
+
+banco_de_dados %>%
+  mutate(data = dmy(data)) %>%
+  mutate(ano = year(data),
+         mes = month(data),
+         dia = day(data)) %>%
+  select(data, ano, mes, dia)
+
+# podemos também calcular a diferença entre duas datas
+banco_de_dados %>%
+  mutate(data = dmy(data)) %>%
+  mutate(dias_desde_acidente = difftime(Sys.Date(), data, units = "days")) %>%
+  select(data, dias_desde_acidente)
+
+# podemos também subtrair ou somar dias de uma data
+banco_de_dados %>%
+  mutate(data = dmy(data)) %>%
+  mutate(data_mais_10_dias = data + lubridate::days(10)) %>%
+  select(data, data_mais_10_dias)
+
+# podemos extrair hora, minuto, segundos...
+data <- ymd_hms("2023-08-21 15:30:45")
+ano <- year(data)
+mes <- month(data)
+dia <- day(data)
+hora <- hour(data)
+minuto <- minute(data)
+segundos <- second(data)
+
+# podemos converter o fuso horário
+data_ny <- ymd_hms("2025-10-21 12:00:00", tz = "America/New_York")
+data_london <- with_tz(data_ny, tz = "Europe/London")
 
 # exercicio 2: utilizando o banco de dados starwars
 ## letra a:
@@ -228,3 +267,163 @@ star %>%
   group_by(species) %>%
   filter(mass == max(mass, na.rm = TRUE)) %>%
   select(species, name, mass)
+
+
+# tidy data: variavel forma coluna e observação linha
+## existe dois tipos: wide e long7
+library(tidyverse)
+table1 <- table1
+
+# pivot: serve para trocar tabelas de wide pra long ou o contrário
+
+# transformar dados long -> wide usando pivot_wider(), que utiliza os 
+# seguintes argumentos: names_from, que éa coluna que contem os nomes
+# das variaveis que sera transformadas em colunas; e values_from, que 
+# é os valores que serão transformados em colunas
+table1 %>%
+  select(-population) %>%
+  pivot_wider(names_from = year,
+              values_from = cases)
+
+# pivotando mais de uma variável
+table1 %>%
+  pivot_wider(names_from = year,
+              values_from = c(cases, population))
+
+# pivot_longer é utilizado para transformar de wide para long
+# e utiliza os seguites argumentos: cols, que é as colunas que serão empilhadas;
+# names_to, que é a coluna que conterá os nomes da variaveis empilhadas;
+# values_to, que é a coluna que conterá os valores da variaveis empilhadas;
+# values_fill, que é o valor que preencherá as cédulas vazias; 
+# values_fn, que é a função que será aplicada aos valores empilhados
+
+table1 %>%
+  pivot_longer(cols = c(cases, population),
+               names_to = "variable",
+               values_to = "total")
+
+# separate: serve para separar observações de uma coluna em duas
+table3
+
+#vamos separar a coluna rate em outras duas
+table3 %>%
+  separate(rate, into = c('cases', 'population'))
+
+# unite: serve para juntar observações de diferentes colunas em uma só
+# vamos fazer o processo inverso do separate
+table1 %>%
+  unite(rate, cases, population, sep = "/")
+
+
+# exercicio 3: 
+install.packages("nycflights13")
+require(nycflights13)
+
+flights %>%
+  count(origin, dest) %>%
+  pivot_wider(names_from = origin,
+              values_from = n,
+              values_fill = 0)
+
+str_length() # retorna o comprimento da string
+str_to_lower() # converte uma string para minúsculas
+str_to_upper() # converte uma string para maiúsculas
+str_sub() # extrai uma substring de uma string
+str_replace() # substitui uma parte de uma string por outra
+str_detect() # verifica se uma string contém um padrão especifico
+
+library(stringr)
+texto <- "Vai, Corinthians!"
+str_length(texto)
+str_to_lower(texto)
+str_to_upper(texto)
+str_sub(texto, 1,3)
+str_replace(texto, "Vai,", "Aqui é")
+str_detect(texto, "Corinthians")
+
+# regex básico: serve para buscar padrões ou manipular strings
+# . corresponde a qualquer caractere
+# ^ inicio de string
+# $ fim de string
+# * zero ou mais ocorrencias do caractere anterior
+# ? zero ou uma ocorrencia do caractere anterior
+# [] conjunto de caracteres
+# | operador "ou"
+
+# exemplos do regex
+str_detect("bisnaguinha", "b.s")
+str_detect("bisnaguinha", "^b")
+str_detect("bbisnaguinha", "b*i")
+str_detect("bisnaguinha", "[nag]")
+
+# concatenando tabelas
+df1 <- tibble(
+  r.a = c(256, 487, 965,
+          125, 458, 874, 963),
+  nome = c('joão', 'vanessa', 'tiago',
+           'luana', 'gisele', 'pedro', 
+           'andré'),
+  curso = c('mat', 'mat', 'est', 'est', 
+            'est', 'mat','est'),
+  prova1 = c(80, 75, 95, 70, 45, 55, 30),
+  prova2 = c(90, 75, 80, 85, 50, 75, NA),
+  prova3 = c(80, 75, 75, 50, NA, 90, 30),
+  faltas = c(4, 4, 0, 8, 16, 0, 20))
+view(df1)
+
+df_extra <- tibble(
+ r.a = c(256, 965, 285, 125, 874, 321, 669, 967),
+ nome = c('joao', 'tiago', 'tiago', 'luana', 
+          'pedro', 'mia', 'luana', 'andré'),
+ idade = c(18, 18, 22, 21, 19, 18, 19, 20),
+ bolsista = c('S', 'N', 'N', 'S', 'N', 'N', 'S', 'N'))
+view(df_extra)
+
+# concatenação de linhas e colunas
+# linhas:
+bind_rows(df1[1:3, c(1, 3, 5)],
+          df1[5:7, c(1, 3, 5, 4)],
+          df1[4, c(1, 0, 5, 4)])
+
+# colunas:
+bind_cols(df1[, c(1:3)],
+          df1[, c(6:7)])
+
+# full_join = união
+full_join(df1, df_extra,
+          by = c('r.a' = 'r.a', 'nome'))
+
+# inner_join = intersecção
+inner_join(df1,
+           df_extra,
+           by = c('r.a' = 'r.a',
+                  'nome'))
+# todos que estão na 1a tabela
+left_join(df1, df_extra,
+          by = c('r.a' = 'r.a', 
+                 'nome'))
+
+# todos os que estão na 2a tabela
+right_join(df1, df_extra,
+           by = c('r.a' = 'r.a',
+                  'nome'))
+
+# os da 2a que não estão na 1a
+anti_join(df1, df_extra,
+          by = c('r.a' = 'r.a',
+                 'nome'))
+
+# para exportar dados (simulação)
+## para arquivos de texto pleno
+write.csv(df1,
+          file = "nome_do_arquivo.csv")
+
+## criando planilhas eletronicas
+library(writexl)
+write_xlsx(df1, "nome_do_arquivo.xlsx")
+
+## arquivo binário do R
+save(df1,
+     file = "nome_do_arquivo.RData")
+## para carregar o arquivo
+load("nome_do_arquivo.RData")
